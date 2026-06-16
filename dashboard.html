@@ -1,15 +1,48 @@
 <!DOCTYPE html>
 <html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard Admin - Tribuana Properti</title>
+    <style>
+        body { font-family: Arial; padding: 20px; background: #f4f4f4; }
+        .container { max-width: 600px; background: white; padding: 20px; border-radius: 8px; margin: auto; }
+        input, textarea { width: 100%; padding: 10px; margin: 10px 0; box-sizing: border-box; }
+        button { padding: 10px 20px; cursor: pointer; }
+        .logout-btn { background: #e74c3c; color: white; border: none; margin-bottom: 20px; }
+    </style>
+</head>
 <body>
-    <h1>Selamat Datang Admin</h1>
-    <p>Di sini Anda bisa mengelola properti.</p>
-    <button onclick="logout()">Logout</button>
-    
+    <div class="container">
+        <button class="logout-btn" onclick="logout()">Logout</button>
+        <h2>Input Listing Properti Baru</h2>
+        
+        <input type="text" id="nama" placeholder="Nama Properti/Perumahan">
+        <input type="number" id="harga" placeholder="Harga (Contoh: 500000000)">
+        <input type="text" id="lokasi" placeholder="Lokasi">
+        <textarea id="deskripsi" placeholder="Deskripsi Singkat"></textarea>
+        
+        <button onclick="simpanData()">Simpan Data</button>
+    </div>
+
     <script>
-        // Proteksi: Jika belum login, tendang balik ke admin.html
+        // Cek Login
         if (localStorage.getItem("admin_login") !== "true") {
             window.location.href = "admin.html";
         }
+
+        function simpanData() {
+            const data = {
+                nama: document.getElementById('nama').value,
+                harga: document.getElementById('harga').value,
+                lokasi: document.getElementById('lokasi').value,
+                deskripsi: document.getElementById('deskripsi').value
+            };
+            
+            // Untuk sekarang, kita tampilkan di console dulu sebagai tes
+            console.log("Data siap disimpan:", data);
+            alert("Data berhasil disimpan (sementara di sistem local)!");
+        }
+
         function logout() {
             localStorage.removeItem("admin_login");
             window.location.href = "admin.html";
