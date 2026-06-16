@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Tribuana Properti</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: 'Montserrat', sans-serif; background-color: #f4f7f6; color: #333; margin: 0; padding: 20px; }
+        .admin-container { max-width: 800px; margin: 0 auto; background: white; padding: 40px; border-radius: 10px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); }
+        h1 { color: #121212; text-align: center; margin-top: 0; border-bottom: 2px solid #D4AF37; padding-bottom: 15px; }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .form-group { margin-bottom: 15px; }
+        .full-width { grid-column: 1 / -1; }
+        label { display: block; font-weight: 600; margin-bottom: 8px; font-size: 14px; color: #555; }
+        input[type="text"], input[type="number"], textarea, input[type="file"] { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; font-family: 'Montserrat', sans-serif; }
+        button { background-color: #121212; color: white; border: none; padding: 15px; width: 100%; font-size: 16px; font-weight: 600; border-radius: 6px; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; transition: 0.3s; margin-top: 20px;}
+        button:hover { background-color: #D4AF37; }
+        #loadingMsg { display: none; text-align: center; font-weight: bold; color: #D4AF37; margin-top: 15px; }
+    </style>
+</head>
+<body>
+
+    <div class="admin-container">
+        <h1>Input Listing Properti Baru</h1>
+        <form id="adminForm">
+            <div class="form-grid">
+                
+                <div class="form-group full-width">
+                    <label>Judul Properti / Nama Perumahan</label>
+                    <input type="text" id="judul" placeholder="Contoh: Cluster Tribuana Mewah Tipe 120" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Harga (Hanya Angka)</label>
+                    <input type="number" id="harga" placeholder="Contoh: 1500000000" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Lokasi Singkat</label>
+                    <input type="text" id="lokasi" placeholder="Contoh: Jakarta Selatan" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Kamar Tidur</label>
+                    <input type="number" id="kt" placeholder="Contoh: 3" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Kamar Mandi</label>
+                    <input type="number" id="km" placeholder="Contoh: 2" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Luas Tanah (m²)</label>
+                    <input type="number" id="lt" placeholder="Contoh: 150" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Luas Bangunan (m²)</label>
+                    <input type="number" id="lb" placeholder="Contoh: 120" required>
+                </div>
+
+                <div class="form-group full-width">
+                    <label>Upload Foto Utama (Wajib)</label>
+                    <input type="file" id="fotoRumah" accept="image/*" required>
+                </div>
+
+            </div>
+
+            <button type="submit" id="btnSubmit">Upload & Simpan ke Website</button>
+            <div id="loadingMsg">⏳ Sedang mengunggah foto dan menyimpan data... Mohon tunggu.</div>
+        </form>
+    </div>
+
+    <script>
+        // Kunci Supabase Anda
+        const SUPABASE_URL = "https://kbjwdihcgmudgnpkflex.supabase.co";
+        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtiandkaWhjZ211ZGducGtmbGV4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2MDk5MDEsImV4cCI6MjA5NzE4NTkwMX0.rcEA8CDLxw3daWswxKBU1aYMoxbC49Fbvh7y7BZtOqI";
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        document.getElementById('adminForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const btn = document.getElementById('btnSubmit');
+            const loading = document.getElementById('loadingMsg');
+            btn.style.display = 'none';
+            loading.style.display = 'block';
+
+            // 1. Ambil file foto dari form
+            const fileFoto = document.getElementById('fotoRumah').files[0];
+            
+            // Buat nama file unik agar tidak bentrok
+            const fileExt = fileFoto.name.split('.').pop();
+            const fileName = Math.random().toString(36).substring(2, 15) + '.' + fileExt;
+
+            try {
+                // 2. Upload foto ke Storage Supabase (bucket: foto_properti)
+                const { error: uploadError } = await supabaseClient.storage
+                    .from('foto_properti')
+                    .upload(fileName, fileFoto);
+
+                if (uploadError) throw uploadError;
+
+                // 3. Dapatkan URL Publik dari foto yang baru diupload
+                const { data: urlData } = supabaseClient.storage
+                    .from('foto_properti')
+                    .getPublicUrl(fileName);
+                
+                const urlFotoPublik = urlData.publicUrl;
+
+                // 4. Simpan semua data teks + URL foto ke tabel Database
+                const { error: dbError } = await supabaseClient
+                    .from('listing_properti')
+                    .insert([{
+                        judul_listing: document.getElementById('judul').value,
+                        harga: parseInt(document.getElementById('harga').value),
+                        lokasi: document.getElementById('lokasi').value,
+                        kamar_tidur: parseInt(document.getElementById('kt').value),
+                        kamar_mandi: parseInt(document.getElementById('km').value),
+                        luas_tanah: parseInt(document.getElementById('lt').value),
+                        luas_bangunan: parseInt(document.getElementById('lb').value),
+                        url_foto_utama: urlFotoPublik
+                    }]);
+
+                if (dbError) throw dbError;
+
+                alert('✅ Berhasil! Properti baru sudah tayang di website.');
+                document.getElementById('adminForm').reset();
+
+            } catch (error) {
+                console.error(error);
+                alert('❌ Gagal mengunggah: ' + error.message + '\n\n(Pastikan Anda sudah membuat bucket "foto_properti" dan mengaturnya ke Public di menu Storage Supabase)');
+            } finally {
+                btn.style.display = 'block';
+                loading.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>

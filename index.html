@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tribuana Properti | Exclusive Properties</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        /* Tema Warna Eksklusif */
+        :root {
+            --dark: #121212; 
+            --gold: #D4AF37; 
+            --white: #ffffff;
+            --gray: #777777;
+            --bg-light: #FAFAFA;
+        }
+
+        body { font-family: 'Montserrat', sans-serif; margin: 0; padding: 0; background-color: var(--bg-light); color: var(--dark); }
+        
+        /* Navigasi Mewah */
+        header { background-color: rgba(255, 255, 255, 0.98); position: sticky; top: 0; z-index: 100; border-bottom: 1px solid #f0f0f0; box-shadow: 0 4px 20px rgba(0,0,0,0.03); }
+        .nav-container { display: flex; justify-content: space-between; align-items: center; max-width: 1200px; margin: 0 auto; padding: 25px 20px; }
+        .logo { font-family: 'Playfair Display', serif; font-size: 26px; font-weight: 700; color: var(--dark); text-decoration: none; letter-spacing: 1px; }
+        .logo span { color: var(--gold); }
+        .nav-menu { display: flex; gap: 35px; }
+        .nav-menu a { text-decoration: none; color: var(--dark); font-weight: 500; font-size: 13px; text-transform: uppercase; letter-spacing: 1.5px; transition: color 0.3s; }
+        .nav-menu a:hover { color: var(--gold); }
+
+        /* Banner Utama */
+        .hero { 
+            background: linear-gradient(135deg, #121212 0%, #2b2b2b 100%); 
+            color: var(--white); 
+            text-align: center; 
+            padding: 150px 20px; 
+            min-height: 40vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        .hero h1 { font-family: 'Playfair Display', serif; font-size: 52px; margin: 0 0 15px 0; font-weight: 700; letter-spacing: 2px; }
+        .hero p { font-size: 18px; font-weight: 300; letter-spacing: 1px; max-width: 650px; margin-bottom: 40px; color: #e0e0e0; line-height: 1.6; }
+        .hero-btn { border: 1px solid var(--gold); background: transparent; color: var(--gold); padding: 15px 35px; font-size: 13px; text-transform: uppercase; letter-spacing: 2px; text-decoration: none; transition: 0.4s; font-weight: 500; }
+        .hero-btn:hover { background: var(--gold); color: var(--white); border-color: var(--gold); }
+
+        /* Area Konten Utama */
+        .container { max-width: 1200px; margin: 80px auto; padding: 0 20px; }
+        .section-title { font-family: 'Playfair Display', serif; text-align: center; color: var(--dark); margin-bottom: 60px; font-size: 38px; }
+        .section-title::after { content: ''; display: block; width: 60px; height: 3px; background-color: var(--gold); margin: 20px auto 0; }
+
+        /* Grid Katalog Properti */
+        .property-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 40px; }
+        .property-card { background: var(--white); overflow: hidden; transition: transform 0.4s, box-shadow 0.4s; border: 1px solid #f0f0f0; }
+        .property-card:hover { transform: translateY(-10px); box-shadow: 0 20px 40px rgba(0,0,0,0.08); }
+        .property-image-wrapper { position: relative; overflow: hidden; background-color: #eee; }
+        .property-image { width: 100%; height: 260px; object-fit: cover; transition: transform 0.7s; }
+        .property-card:hover .property-image { transform: scale(1.05); }
+        .status-badge { position: absolute; top: 20px; right: 20px; background-color: var(--gold); color: var(--white); padding: 6px 15px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 2px; z-index: 10; }
+        
+        .property-info { padding: 35px 30px; }
+        .property-price { font-family: 'Playfair Display', serif; font-size: 28px; font-weight: 700; color: var(--gold); margin-bottom: 12px; }
+        .property-title { margin: 0 0 15px 0; font-size: 20px; font-weight: 600; color: var(--dark); }
+        .property-location { font-size: 12px; color: var(--gray); margin-bottom: 25px; text-transform: uppercase; letter-spacing: 1.5px; }
+        
+        .property-specs { display: flex; justify-content: space-between; border-top: 1px solid #f0f0f0; border-bottom: 1px solid #f0f0f0; padding: 18px 0; margin-bottom: 25px; font-size: 13px; color: var(--gray); font-weight: 500;}
+        .spec-item { display: flex; align-items: center; gap: 8px; }
+        
+        .btn-detail { display: block; text-align: center; background-color: var(--dark); color: var(--white); text-decoration: none; padding: 16px; font-size: 12px; text-transform: uppercase; letter-spacing: 2px; font-weight: 600; transition: background 0.3s; }
+        .btn-detail:hover { background-color: var(--gold); color: var(--white); }
+        
+        footer { background-color: var(--dark); color: #888; text-align: center; padding: 60px 20px; margin-top: 100px; font-size: 13px; letter-spacing: 1px; }
+        footer span { color: var(--gold); font-family: 'Playfair Display', serif; font-size: 20px; display: block; margin-bottom: 15px;}
+
+        /* =========================================
+           ATURAN KHUSUS UNTUK LAYAR HP (MOBILE RESPONSIVE)
+           ========================================= */
+        @media (max-width: 768px) {
+            .nav-container { flex-direction: column; gap: 15px; padding: 15px; }
+            .nav-menu { flex-wrap: wrap; justify-content: center; gap: 15px; }
+            .hero { padding: 80px 20px; }
+            .hero h1 { font-size: 32px; }
+            .hero p { font-size: 15px; }
+            .section-title { font-size: 28px; margin-bottom: 40px; }
+            .property-grid { grid-template-columns: 1fr; } /* Kartu jadi 1 baris ke bawah */
+            .property-image { height: 220px; }
+            .property-specs { flex-wrap: wrap; gap: 10px; justify-content: flex-start; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="nav-container">
+            <a href="#" class="logo">Tribuana <span>Properti</span></a>
+            <nav class="nav-menu">
+                <a href="#">Beranda</a>
+                <a href="#listing">Koleksi Properti</a>
+                <a href="#">Simulasi KPR</a>
+                <a href="#">Kontak</a>
+            </nav>
+        </div>
+    </header>
+
+    <div class="hero">
+        <h1>Wujudkan Hunian Impian Anda</h1>
+        <p>Eksplorasi koleksi properti eksklusif kami. Pilihan investasi terbaik dengan nilai prestise tinggi dan lokasi strategis.</p>
+        <a href="#listing" class="hero-btn">Lihat Koleksi</a>
+    </div>
+
+    <div class="container" id="listing">
+        <h2 class="section-title">Koleksi Eksklusif Terbaru</h2>
+        
+        <div class="property-grid" id="katalogProperti">
+            <p style="text-align:center; width: 100%; font-style: italic; color: #888;">Menyelaraskan data koleksi properti...</p>
+        </div>
+    </div>
+
+    <footer>
+        <span>Tribuana Properti</span>
+        <p>&copy; 2026 Hak Cipta Dilindungi. Mewujudkan Gaya Hidup, Membangun Masa Depan.</p>
+    </footer>
+
+    <script>
+        // Kunci Supabase Anda
+        const SUPABASE_URL = "https://kbjwdihcgmudgnpkflex.supabase.co";
+        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtiandkaWhjZ211ZGducGtmbGV4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2MDk5MDEsImV4cCI6MjA5NzE4NTkwMX0.rcEA8CDLxw3daWswxKBU1aYMoxbC49Fbvh7y7BZtOqI";
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        async function muatKatalogProperti() {
+            const wadah = document.getElementById('katalogProperti');
+
+            const { data, error } = await supabaseClient
+                .from('listing_properti')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            if (error) {
+                wadah.innerHTML = '<p style="color:red; text-align:center;">Gagal memuat koleksi properti.</p>';
+                return;
+            }
+
+            wadah.innerHTML = ''; 
+
+            if (data.length === 0) {
+                wadah.innerHTML = '<p style="text-align:center; width: 100%; font-size: 18px; color: #666;">Belum ada koleksi properti yang diluncurkan.</p>';
+                return;
+            }
+
+            data.forEach(rumah => {
+                const hargaRupiah = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(rumah.harga);
+                const fotoAman = rumah.url_foto_utama ? rumah.url_foto_utama : 'data:image/gif;base64,R0lGODlhAQABAIAAAMLCwgAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw==';
+
+                const kartu = document.createElement('div');
+                kartu.className = 'property-card';
+                kartu.innerHTML = `
+                    <div class="property-image-wrapper">
+                        <span class="status-badge">${rumah.status_penjualan}</span>
+                        <img src="${fotoAman}" alt="${rumah.judul_listing}" class="property-image">
+                    </div>
+                    <div class="property-info">
+                        <div class="property-price">${hargaRupiah}</div>
+                        <h3 class="property-title">${rumah.judul_listing}</h3>
+                        <div class="property-location">📍 ${rumah.lokasi}</div>
+                        <div class="property-specs">
+                            <span class="spec-item">🛏️ ${rumah.kamar_tidur} KT</span>
+                            <span class="spec-item">🚿 ${rumah.kamar_mandi} KM</span>
+                            <span class="spec-item">📐 LB: ${rumah.luas_bangunan} / LT: ${rumah.luas_tanah} m²</span>
+                        </div>
+                        <a href="https://wa.me/6281234567890?text=Halo,%20saya%20tertarik%20dengan%20properti%20eksklusif:%20${rumah.judul_listing}" target="_blank" class="btn-detail">Jadwalkan Survei</a>
+                    </div>
+                `;
+                wadah.appendChild(kartu);
+            });
+        }
+
+        muatKatalogProperti();
+    </script>
+</body>
+</html>
