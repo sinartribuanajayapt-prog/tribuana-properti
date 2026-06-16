@@ -7,8 +7,8 @@
         body { font-family: Arial; padding: 20px; background: #f4f4f4; }
         .container { max-width: 600px; background: white; padding: 20px; border-radius: 8px; margin: auto; }
         input, textarea { width: 100%; padding: 10px; margin: 10px 0; box-sizing: border-box; }
-        button { padding: 10px 20px; cursor: pointer; }
-        .logout-btn { background: #e74c3c; color: white; border: none; margin-bottom: 20px; }
+        button { padding: 10px 20px; cursor: pointer; background: #27ae60; color: white; border: none; }
+        .logout-btn { background: #e74c3c; margin-bottom: 20px; }
     </style>
 </head>
 <body>
@@ -21,16 +21,18 @@
         <input type="text" id="lokasi" placeholder="Lokasi">
         <textarea id="deskripsi" placeholder="Deskripsi Singkat"></textarea>
         
-        <button onclick="simpanData()">Simpan Data</button>
+        <button id="btnSimpan" onclick="simpanData()">Simpan Data</button>
     </div>
 
     <script>
-        // Cek Login
         if (localStorage.getItem("admin_login") !== "true") {
             window.location.href = "admin.html";
         }
 
-        function simpanData() {
+        async function simpanData() {
+            const btn = document.getElementById('btnSimpan');
+            btn.innerText = "Mengirim...";
+            
             const data = {
                 nama: document.getElementById('nama').value,
                 harga: document.getElementById('harga').value,
@@ -38,9 +40,22 @@
                 deskripsi: document.getElementById('deskripsi').value
             };
             
-            // Untuk sekarang, kita tampilkan di console dulu sebagai tes
-            console.log("Data siap disimpan:", data);
-            alert("Data berhasil disimpan (sementara di sistem local)!");
+            // URL Google Apps Script Anda
+            const url = "https://script.google.com/macros/s/AKfycby148efh9WhVxTkJHjSJRPpKOmj5qfVel1NdIdfv0T3iLW4X5u7d908CJv5uvHnKbNfOA/exec";
+
+            try {
+                await fetch(url, {
+                    method: "POST",
+                    mode: 'no-cors', // Penting agar tidak terkena error blokir browser
+                    body: JSON.stringify(data)
+                });
+                alert("Data berhasil terkirim ke Google Sheets!");
+                // Kosongkan form setelah berhasil
+                document.querySelectorAll('input, textarea').forEach(el => el.value = '');
+            } catch (error) {
+                alert("Gagal mengirim data.");
+            }
+            btn.innerText = "Simpan Data";
         }
 
         function logout() {
