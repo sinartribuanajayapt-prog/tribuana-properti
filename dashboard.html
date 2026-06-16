@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="id">
+<body>
+    <h1>Selamat Datang Admin</h1>
+    <p>Di sini Anda bisa mengelola properti.</p>
+    <button onclick="logout()">Logout</button>
+    
+    <script>
+        // Proteksi: Jika belum login, tendang balik ke admin.html
+        if (localStorage.getItem("admin_login") !== "true") {
+            window.location.href = "admin.html";
+        }
+        function logout() {
+            localStorage.removeItem("admin_login");
+            window.location.href = "admin.html";
+        }
+    </script>
+</body>
+</html>
